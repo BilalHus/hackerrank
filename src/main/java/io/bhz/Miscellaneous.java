@@ -7,50 +7,71 @@ import java.util.stream.LongStream;
 public class Miscellaneous {
 
     public static void main(String[] args) {
-//        maxCircle(
-//                new int[][]{{1000000000,23}, {11, 3778}, {7, 47}, {11, 1000000000}}
-//        );
+    }
 
-        maxCircle(
-                new int[][] {{1, 2}, {3, 4}, {1, 3}, {5, 7}, {5, 6}, {7, 4}}
-        );
+    static class Node {
+
+        public Node parent;
+        public int value;
+        public int children = 1;
+
+        public Node(int value) {
+            this.value = value;
+            parent = this;
+        }
+
+        public Node getRepresentative() {
+            return this == parent ? this : parent.getRepresentative();
+        }
+
+        public int rehang(Node to) {
+            Node fromRepr = this.getRepresentative();
+            Node toRepr = to.getRepresentative();
+            if (toRepr.children == 0 && fromRepr.children == 0) {
+                toRepr.children = 1;
+            } else if (toRepr != fromRepr){
+                toRepr.children += fromRepr.children;
+            }
+            fromRepr.parent = toRepr;
+            return toRepr.children;
+        }
     }
 
     static int[] maxCircle(int[][] queries) {
         int[] result = new int[queries.length];
-        Map<Integer, Integer> tree = new HashMap<>();
-        Map<Integer, Integer> count = new HashMap<>();
+        Map<Integer, Node> map = new HashMap<>();
 
         for (int i = 0; i < queries.length; i++) {
             int a = queries[i][0];
             int b = queries[i][1];
-            add(a, b, tree, count);
+
+            if (!map.containsKey(a)) {
+                Node node = new Node(a);
+                map.put(a, node);
+            }
+
+            if (!map.containsKey(b)) {
+                Node node = new Node(b);
+                map.put(b, node);
+            }
+
+            Node aNode = map.get(a);
+            Node bNode = map.get(b);
+
+            int children;
+
+            if (aNode.children > bNode.children) children = bNode.rehang(aNode);
+            else children = aNode.rehang(bNode);
+
+            if (i == 0) {
+                result[i] = children;
+            } else {
+                result[i] = Math.max(children, result[i - 1]);
+            }
         }
 
 
         return result;
-    }
-
-    static void add(int a, int b, Map<Integer, Integer> tree, Map<Integer, Integer> count) {
-        count.putIfAbsent(a, 0);
-        count.putIfAbsent(b, 0);
-
-        if (tree.containsKey(a) && tree.containsKey(b)) {
-            add(tree.get(a), tree.get(b), tree, count);
-            count.put(a, count.get(a) + count.get(b));
-        } else if (tree.containsKey(b)) {
-            tree.put(a, b);
-            if (count.get(a) == 0) {
-                count.put(b, count.get(b) + 1);
-            }
-            count.put(b, count.get(a) + count.get(b));
-        } else {
-            tree.put(b, a);
-            if (count.get(b) == 0) {
-                count.put(a, count.get(a) + 1);
-            }
-            count.put(a, count.get(a) + count.get(b));
-        }
     }
 
     public static String primality(int n) {

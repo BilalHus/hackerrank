@@ -1,5 +1,6 @@
 package io.bhz;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.LongStream;
@@ -7,6 +8,34 @@ import java.util.stream.LongStream;
 public class Miscellaneous {
 
     public static void main(String[] args) {
+
+        System.out.println(
+                Arrays.toString(
+                        maxXor(new int[]{0, 1, 2}, new int[]{3, 7, 2})
+                )
+        );
+    }
+
+
+    static int[] maxXor(int[] arr, int[] queries) {
+        int[] result = new int[queries.length];
+        Arrays.sort(arr);
+
+        for (int i = 0; i < queries.length; i++) {
+            int xor = queries[i];
+            for (int j = 0; j < 31; j++) {
+                xor ^= 1 << j;
+            }
+
+            int index = Arrays.binarySearch(arr, xor);
+            if (index < 0) {
+                index = -(index + 1);
+            }
+
+            result[i] = queries[i] ^ arr[Math.min(index, arr.length - 1)];
+        }
+
+        return result;
     }
 
     static class Node {

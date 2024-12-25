@@ -9,15 +9,79 @@ public class Miscellaneous {
 
     public static void main(String[] args) {
 
-        System.out.println(
-                Arrays.toString(
-                        maxXor(new int[]{0, 1, 2}, new int[]{3, 7, 2})
-                )
-        );
     }
 
 
     static int[] maxXor(int[] arr, int[] queries) {
+        BinaryTreeNode root = new BinaryTreeNode();
+        for (int i : arr) {
+            BinaryTreeNode.insert(i, root);
+        }
+
+        int[] result = new int[queries.length];
+
+        for (int i = 0; i < queries.length; i++) {
+            result[i] = queries[i] ^ BinaryTreeNode.findMaxXor(queries[i], root);
+        }
+
+        return result;
+    }
+
+    static class BinaryTreeNode {
+        BinaryTreeNode zero;
+
+        BinaryTreeNode one;
+
+        int value = -1;
+
+        static void insert(int number, BinaryTreeNode root) {
+
+            BinaryTreeNode node = root;
+
+            for (int i = 31; i >= 0; i--) {
+                int bit = (number >> i) & 1;
+
+                if (bit == 1) {
+                    if (node.one == null) {
+                        node.one = new BinaryTreeNode();
+                    }
+                    node = node.one;
+                } else {
+                    if (node.zero == null) {
+                        node.zero = new BinaryTreeNode();
+                    }
+                    node = node.zero;
+                }
+            }
+
+            node.value = number;
+        }
+
+
+        static int findMaxXor(int number, BinaryTreeNode root) {
+
+            BinaryTreeNode node = root;
+
+            for (int i = 31; i >= 0; i--) {
+                int bit = (number >> i) & 1;
+
+                if (bit == 1 && node.zero != null) {
+                    node = node.zero;
+                } else if (bit == 1) {
+                    node = node.one;
+                } else if (node.one != null) {
+                    node = node.one;
+                } else {
+                    node = node.zero;
+                }
+            }
+
+            return node.value;
+        }
+    }
+
+
+    static int[] maxXorSlow(int[] arr, int[] queries) {
         int[] result = new int[queries.length];
         Arrays.sort(arr);
 
@@ -37,6 +101,7 @@ public class Miscellaneous {
 
         return result;
     }
+
 
     static class Node {
 
@@ -58,7 +123,7 @@ public class Miscellaneous {
             Node toRepr = to.getRepresentative();
             if (toRepr.children == 0 && fromRepr.children == 0) {
                 toRepr.children = 1;
-            } else if (toRepr != fromRepr){
+            } else if (toRepr != fromRepr) {
                 toRepr.children += fromRepr.children;
             }
             fromRepr.parent = toRepr;
